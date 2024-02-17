@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package weather;
+
+enum Unit{
+    Fahrenheit = 0;
+    Celsius = 1;
+    Kelvin = 2;
+}
+
+message Weather {
+    float teamp = 1;
+    Unit unit = 2;
+}
+
+message GetWeatherRequest {
+    string city = 1;
+}
+
+service WeatherService {
+    rpc Get(GetWeatherRequest) returns (Weather);
+}
