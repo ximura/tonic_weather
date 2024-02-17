@@ -1,14 +1,13 @@
-#[allow(unused_imports)]
-
 use std::env;
 use tonic::{transport::Server, Request, Response, Status};
+
 pub mod grpc_weather {
     tonic::include_proto!("weather");
     pub(crate) const FILE_DESCRIPTOR_SET: &[u8] =
         tonic::include_file_descriptor_set!("weather_descriptor");
 }
 use grpc_weather::weather_server::{Weather, WeatherServer};
-use grpc_weather::{GetWeatherRequest, WeatherResponse, Unit};
+use grpc_weather::{GetWeatherRequest, Unit, WeatherResponse};
 
 #[derive(Debug, Default)]
 pub struct WeatherService {}
@@ -21,7 +20,10 @@ impl Weather for WeatherService {
     ) -> Result<Response<WeatherResponse>, Status> {
         println!("Got a request: {:?}", request);
 
-        let reply = grpc_weather::WeatherResponse { temperature: 10.0, unit: Unit::Celsius as i32};
+        let reply = grpc_weather::WeatherResponse {
+            temperature: 10.0,
+            unit: Unit::Celsius as i32,
+        };
 
         Ok(Response::new(reply))
     }
@@ -40,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set_serving::<WeatherServer<WeatherService>>()
         .await;
 
-        let reflect_service = tonic_reflection::server::Builder::configure()
+    let reflect_service = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(grpc_weather::FILE_DESCRIPTOR_SET)
         .build()
         .unwrap();
