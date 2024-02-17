@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=xx / /
 
 # Install host build dependencies.
-RUN apk add --no-cache clang lld musl-dev git file
+RUN apk add --no-cache clang lld musl-dev git file protoc
 
 # This is the architecture you’re building for, which is passed in by the builder.
 # Placing it here allows the previous steps to be cached across architectures.
@@ -32,6 +32,8 @@ ARG TARGETPLATFORM
 
 # Install cross compilation build dependencies.
 RUN xx-apk add --no-cache musl-dev gcc
+# install protobuf
+RUN xx-apk add protoc
 
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
@@ -42,8 +44,10 @@ RUN xx-apk add --no-cache musl-dev gcc
 # source code into the container. Once built, copy the executable to an
 # output directory before the cache mounted /app/target is unmounted.
 RUN --mount=type=bind,source=src,target=src \
+    --mount=type=bind,source=proto,target=proto \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
+    --mount=type=bind,source=build.rs,target=build.rs \
     --mount=type=cache,target=/app/target/,id=rust-cache-${APP_NAME}-${TARGETPLATFORM} \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
@@ -80,7 +84,7 @@ USER appuser
 COPY --from=build /bin/server /bin/
 
 # Expose the port that the application listens on.
-EXPOSE 5000
+EXPOSE 50051
 
 # What the container should run when it is started.
 CMD ["/bin/server"]
