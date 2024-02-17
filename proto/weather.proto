@@ -8,8 +8,8 @@ enum Unit{
     Kelvin = 2;
 }
 
-message Weather {
-    float teamp = 1;
+message WeatherResponse {
+    float temperature = 1;
     Unit unit = 2;
 }
 
@@ -17,6 +17,6 @@ message GetWeatherRequest {
     string city = 1;
 }
 
-service WeatherService {
-    rpc Get(GetWeatherRequest) returns (Weather);
+service Weather {
+    rpc Get(GetWeatherRequest) returns (WeatherResponse);
 }
